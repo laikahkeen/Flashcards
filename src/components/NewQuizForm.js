@@ -1,15 +1,20 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { v4 as uuidv4 } from "uuid";
-import ROUTES from "../app/routes";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { v4 as uuidv4 } from 'uuid';
+import ROUTES from '../app/routes';
+import { selectTopics } from '../features/topics/topicsSlice';
+import { createNewQuiz } from '../features/quizzes/quizzesSlice';
+import { addCard } from '../features/cards/cardsSlice';
 
 export default function NewQuizForm() {
-	const [name, setName] = useState("");
+	const [name, setName] = useState('');
 	const [cards, setCards] = useState([]);
-	const [topicId, setTopicId] = useState("");
+	const [topicId, setTopicId] = useState('');
 	const navigate = useNavigate();
-	const topics = {};
-	const uniqueId = uuidv4();
+	const dispatch = useDispatch();
+	const topics = useSelector(selectTopics);
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
@@ -20,14 +25,31 @@ export default function NewQuizForm() {
 		const cardIds = [];
 
 		// create the new cards here and add each card's id to cardIds
+		cards.map((card) => {
+			const newCard = {
+				id: uuidv4(),
+				...card,
+			};
+			dispatch(addCard(newCard));
+			cardIds.push(newCard.id);
+		});
+
 		// create the new quiz here
+		dispatch(
+			createNewQuiz({
+				id: uuidv4(),
+				name: name,
+				topicId: topicId,
+				cardIds: cardIds,
+			})
+		);
 
 		navigate(ROUTES.quizzesRoute());
 	};
 
 	const addCardInputs = (e) => {
 		e.preventDefault();
-		setCards(cards.concat({ front: "", back: "" }));
+		setCards(cards.concat({ front: '', back: '' }));
 	};
 
 	const removeCard = (e, index) => {
@@ -46,52 +68,52 @@ export default function NewQuizForm() {
 			<h1>Create a new quiz</h1>
 			<form onSubmit={handleSubmit}>
 				<input
-					id="quiz-name"
+					id='quiz-name'
 					value={name}
 					onChange={(e) => setName(e.currentTarget.value)}
-					placeholder="Quiz Title"
+					placeholder='Quiz Title'
 				/>
 				<select
-					id="quiz-topic"
+					id='quiz-topic'
 					onChange={(e) => setTopicId(e.currentTarget.value)}
-					placeholder="Topic">
-					<option value="">Topic</option>
+					placeholder='Topic'>
+					<option value=''>Topic</option>
 					{Object.values(topics).map((topic) => (
-						<option key={topic.id} value={topic.id}>
+						<option
+							key={topic.id}
+							value={topic.id}>
 							{topic.name}
 						</option>
 					))}
 				</select>
 				{cards.map((card, index) => (
-					<div key={index} className="card-front-back">
+					<div
+						key={index}
+						className='card-front-back'>
 						<input
 							id={`card-front-${index}`}
 							value={cards[index].front}
-							onChange={(e) =>
-								updateCardState(index, "front", e.currentTarget.value)
-							}
-							placeholder="Front"
+							onChange={(e) => updateCardState(index, 'front', e.currentTarget.value)}
+							placeholder='Front'
 						/>
 
 						<input
 							id={`card-back-${index}`}
 							value={cards[index].back}
-							onChange={(e) =>
-								updateCardState(index, "back", e.currentTarget.value)
-							}
-							placeholder="Back"
+							onChange={(e) => updateCardState(index, 'back', e.currentTarget.value)}
+							placeholder='Back'
 						/>
 
 						<button
 							onClick={(e) => removeCard(e, index)}
-							className="remove-card-button">
+							className='remove-card-button'>
 							Remove Card
 						</button>
 					</div>
 				))}
-				<div className="actions-container">
+				<div className='actions-container'>
 					<button onClick={addCardInputs}>Add a Card</button>
-					<button>Create Quiz</button>
+					<button type='submit'>Create Quiz</button>
 				</div>
 			</form>
 		</section>
