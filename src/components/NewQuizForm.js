@@ -32,6 +32,7 @@ export default function NewQuizForm() {
 			};
 			dispatch(addCard(newCard));
 			cardIds.push(newCard.id);
+			return card;
 		});
 
 		// create the new quiz here
